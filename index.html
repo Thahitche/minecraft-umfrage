@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Unser Minecraft-Gemeinschaftsprojekt</title>
+<style>
+:root{color-scheme:light dark;--bg:#f4f2ea;--card:#fff;--ink:#1f2a1d;--mute:#667060;--line:#d8d4c4;--acc:#3d8b3d;--accink:#fff;--bad:#b3392f;--sel:#e4f2e0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181a;--card:#1f2527;--ink:#e8ece4;--mute:#97a191;--line:#34403a;--acc:#5db85d;--accink:#0d1a0d;--bad:#e5766c;--sel:#24402a}}
+:root[data-theme="dark"]{--bg:#15181a;--card:#1f2527;--ink:#e8ece4;--mute:#97a191;--line:#34403a;--acc:#5db85d;--accink:#0d1a0d;--bad:#e5766c;--sel:#24402a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:1.6rem;margin:.2em 0}
+h2{font-size:1.2rem;margin:1.6em 0 .1em}
+p.q{margin:.1em 0 .6em;color:var(--mute)}
+.tabs{display:flex;gap:8px;margin:14px 0}
+.tabs button,.btn{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px;border-radius:10px;cursor:pointer}
+.tabs button.on,.btn.pri{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{position:relative;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:10px 10px 8px;cursor:pointer;user-select:none}
+.card.fav{border-color:var(--acc);background:var(--sel)}
+.card.no{opacity:.55;border-style:dashed;border-color:var(--bad)}
+.em{font-size:1.7rem}
+.nm{font-weight:600}
+.ht{font-size:.82rem;color:var(--mute)}
+.badge{position:absolute;top:6px;right:40px;background:var(--acc);color:var(--accink);border-radius:50%;width:24px;height:24px;display:none;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+.card.fav .badge{display:flex}
+.x{position:absolute;top:4px;right:6px;border:0;background:none;color:var(--mute);font-size:1.1rem;cursor:pointer;padding:2px 6px}
+.card.no .x{color:var(--bad);font-weight:700}
+input[type=text],textarea{width:100%;box-sizing:border-box;font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+textarea{min-height:70px;resize:vertical}
+.note{font-size:.85rem;color:var(--mute);margin:.3em 0}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0}
+.bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:.95rem}
+.bar .lb{width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .tr{flex:1;background:var(--line);border-radius:6px;height:14px;overflow:hidden}
+.bar .fi{background:var(--acc);height:100%}
+.bar .vl{width:84px;text-align:right;font-size:.85rem;color:var(--mute)}
+.warn{color:var(--bad)}
+.hide{display:none}
+</style></head>
+<body><div class="wrap">
+<h1>Unser Gemeinschaftsprojekt 🧱</h1>
+<div class="tabs"><button id="t1" class="on">Abstimmen</button><button id="t2">Auswertung (Orga)</button></div>
+
+<div id="v1">
+<p>Wähle pro Bereich bis zu <b>3 Favoriten</b>. Die Reihenfolge zählt: 1. Wahl = 3 Punkte, 2. = 2, 3. = 1. Mit dem ✕ markierst du, was für dich gar nicht geht. Eigene Ideen sind ausdrücklich erwünscht.</p>
+<input type="text" id="nm" maxlength="24" placeholder="Dein Name / Minecraft-Name">
+<div id="cats"></div>
+<h2>🙋 Wer macht was?</h2><p class="q">Wähle alles, was du gern übernehmen würdest (beliebig viele).</p>
+<div class="grid" id="tasks"></div>
+<textarea id="tx" maxlength="200" placeholder="Sonstiges: Was würdest du noch gern übernehmen? (optional)"></textarea>
+<div class="box" id="done" style="display:none">
+<b>Fertig! 🎉</b>
+<p class="note">Kopiere diesen Code und schick ihn per Discord/WhatsApp an die Orga. Mehr musst du nicht tun.</p>
+<textarea id="code" readonly></textarea>
+<p><button class="btn pri" id="cp">Code kopieren</button> <span id="cpm" class="note"></span></p>
+</div>
+<p><button class="btn pri" id="go">Abstimmung abschließen</button> <span id="err" class="warn"></span></p>
+</div>
+
+<div id="v2" class="hide">
+<p>Füge hier alle Codes ein, die dir deine Leute geschickt haben (einfach alles untereinander, Text drumherum ist egal).</p>
+<textarea id="paste" placeholder="MC1:…"></textarea>
+<p><button class="btn pri" id="ev">Auswerten</button></p>
+<div id="res"></div>
+</div>
+</div>
+
+<script>
+const CATS=[
+{k:"biom",t:"🌍 Biom",q:"Wo soll unser Projekt stehen? (Alle Biome sind in Gruppen zusammengefasst.)",o:[
+["🌱","Ebenen & Wiesen","Ebene, Sonnenblumenebene, Wiese"],["🌳","Wälder","Wald, Blumenwald, Birkenwald, Alter Birkenwald"],["🌑","Dunkelwald & Blasser Garten","düster, gruselig-schön"],["🌸","Kirschhain","rosa, friedlich"],["🌲","Taiga","Taiga, Alte Kiefern- & Fichtentaiga"],["❄️","Schnee & Eis","Verschneite Ebene, Eiszacken, Verschneite Taiga"],["🌴","Dschungel","Dschungel, Lichter Dschungel, Bambusdschungel"],["🐸","Sümpfe","Sumpf, Mangrovensumpf"],["🦁","Savanne","Savanne, Savannenplateau, Windgepeitschte Savanne"],["🏜️","Wüste","Sand, Kakteen, Dünen"],["🧱","Ödland (Badlands)","Ödland, Zerklüftetes, Bewaldetes Ödland"],["🏔️","Schneegipfel","Zackengipfel, Gefrorene Gipfel, Verschneite Hänge, Hain"],["⛰️","Hügel & Felsgipfel","Windgepeitschte Hügel, Kieshügel, Wald, Felsgipfel"],["🏖️","Strand & Küste","Strand, Verschneiter Strand, Steinküste"],["🏞️","Flüsse","Fluss, Gefrorener Fluss"],["🌊","Ozean","kalt, gemäßigt, gefroren, auch tief"],["🪸","Warmer Ozean & Korallen","Warmer und Lauwarmer Ozean"],["🍄","Pilzinsel","skurril, ruhig"],["🕳️","Höhlenwelten","Üppige Höhlen, Tropfsteinhöhlen, Tiefendunkel"],["🔥","Nether","Nether-Ödnis, Karmesin- & Wirrwald, Seelensandtal, Basaltdeltas"],["🌌","The End","End-Inseln, Highlands, Midlands, Barrens"]]},
+{k:"thema",t:"✨ Thema",q:"Welche Geschichte steckt dahinter?",o:[
+["🐉","Fantasy-Reich","Drachen, Königreiche"],["🚀","Sci-Fi","Raumstation, Zukunft"],["🏴‍☠️","Piraten","Schätze, Inseln"],["⚡","Mythologie","Götter, Legenden"],["☢️","Endzeit / Post-Apokalypse","verlassen, überwuchert"],["🎪","Märchenwelt","Hexen, Zwerge, Riesen"],["🕵️","Mystery & Gruselig","Geheimnisse, Nebel"],["🌿","Natur & Frieden","Harmonie statt Drama"]]},
+{k:"stil",t:"🎨 Baustil",q:"Wie soll es aussehen?",o:[
+["🏰","Mittelalter","Stein, Holz, Fahnen"],["🧚","Fantasy & Märchen","verspielt, magisch"],["🏙️","Modern","Glas, Beton, klare Linien"],["🏯","Japanisch / Asiatisch","Pagoden, Holz, Laternen"],["⚙️","Steampunk & Industrie","Zahnräder, Kupfer"],["🏡","Gemütlich & Fachwerk","Dorf-Feeling"],["🏛️","Antik & Mediterran","Säulen, weiße Wände"],["🏚️","Ruinen & Verwunschen","überwuchert, alt"]]},
+{k:"pal",t:"🎨 Farbpalette",q:"Welche Farbstimmung soll das Projekt haben?",o:[
+["⬜","Helle Töne","Weiß, Beige, Pastell, Quarz"],["⬛","Dunkle Töne","Schwarz, Grau, Tiefenschiefer"],["🟫","Warme Erdtöne","Holz, Ziegel, Terrakotta"],["🟦","Kühle Töne","Blau, Türkis, Eis, Prismarin"],["🌈","Bunt & knallig","Wolle, Beton, viele Farben"],["🟩","Natur & Grün","Moos, Laub, Erde"],["✨","Wenige Farben, klares Schema","ruhig und einheitlich"]]},
+{k:"geb",t:"🏗️ Gemeinsames Gebäude",q:"Was bauen wir zusammen?",o:[
+["🏰","Burg oder Festung","Mauern, Türme"],["🏘️","Stadt oder Dorf","jeder baut sein Haus"],["⛩️","Tempel / Heiligtum","Ehrfurcht, Details"],["⚓","Hafen mit Schiffen","Docks, Flotte"],["🧙","Magierturm","hoch, Geheimräume"],["🎢","Freizeitpark","Achterbahnen, Spiele"],["📚","Bibliothek / Museum","Hallen, Sammlungen"],["🕳️","Unterirdische Stadt","Höhlen, Tunnel"]]}
+];
+const S={r:{},x:{},i:{},t:[],tx:""};
+CATS.forEach(c=>{S.r[c.k]=[];S.x[c.k]=[];S.i[c.k]=""});
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const enc=s=>btoa(unescape(encodeURIComponent(s)));
+const dec=s=>decodeURIComponent(escape(atob(s)));
+
+$("cats").innerHTML=CATS.map(c=>`<h2>${c.t}</h2><p class="q">${c.q}</p>
+<div class="grid" data-c="${c.k}">${c.o.map((o,j)=>`<div class="card" data-j="${j}"><span class="badge"></span><button class="x" title="No-Go">✕</button><div class="em">${o[0]}</div><div class="nm">${esc(o[1])}</div><div class="ht">${esc(o[2])}</div></div>`).join("")}</div>
+<p class="note" id="n_${c.k}"></p>
+<textarea data-i="${c.k}" maxlength="200" placeholder="Eigene Idee zu diesem Bereich (optional)"></textarea>`).join("");
+
+function paint(){
+  CATS.forEach(c=>{
+    const g=document.querySelector(`.grid[data-c="${c.k}"]`);
+    g.querySelectorAll(".card").forEach(el=>{
+      const j=+el.dataset.j,r=S.r[c.k].indexOf(j);
+      el.classList.toggle("fav",r>=0);
+      el.classList.toggle("no",S.x[c.k].includes(j));
+      el.querySelector(".badge").textContent=r+1;
+    });
+    $("n_"+c.k).textContent=S.r[c.k].length+" von 3 Favoriten gewählt";
+  });
+}
+$("cats").addEventListener("click",e=>{
+  const card=e.target.closest(".card");if(!card)return;
+  const k=card.parentElement.dataset.c,j=+card.dataset.j;
+  const r=S.r[k],x=S.x[k];
+  if(e.target.closest(".x")){
+    const i=x.indexOf(j);
+    if(i>=0)x.splice(i,1);else{x.push(j);const q=r.indexOf(j);if(q>=0)r.splice(q,1)}
+  }else{
+    const q=r.indexOf(j);
+    if(q>=0)r.splice(q,1);
+    else if(r.length<3){const i=x.indexOf(j);if(i>=0)x.splice(i,1);r.push(j)}
+    else $("n_"+k).textContent="Maximal 3 Favoriten – wähle erst einen ab.";
+    if(q>=0||r.length<=3)paintKeep(k);
+  }
+  paint();
+});
+function paintKeep(){}
+$("cats").addEventListener("input",e=>{const k=e.target.dataset.i;if(k)S.i[k]=e.target.value});
+
+const TASKS=[["🌾","Farmen bauen","Tiere, Pflanzen, Mobs"],["⛏️","Blöcke farmen & abbauen","Ressourcen für alle"],["🏗️","Gebäude bauen","Rohbau & Struktur"],["🪴","Dekoration & Inneneinrichtung","Details, Möbel, Feinschliff"],["⛰️","Landschaft gestalten","Gelände, Bäume, Wege"],["⚡","Redstone & Technik","Aufzüge, Automatik"],["💡","Beleuchtung & Atmosphäre","Licht und Stimmung"],["🛤️","Straßen, Wege & Brücken","Verbindungen"],["📐","Planung & Koordination","Skizzen, Bauplan"],["🧪","Rüstung, Tränke & Vorräte","Support fürs Team"],["🤝","Hilfe, wo gerade nötig","Springer"]];
+$("tasks").innerHTML=TASKS.map((t,j)=>`<div class="card" data-t="${j}"><span class="badge" style="right:8px">✓</span><div class="em">${t[0]}</div><div class="nm">${esc(t[1])}</div><div class="ht">${esc(t[2])}</div></div>`).join("");
+$("tasks").addEventListener("click",e=>{const c=e.target.closest(".card");if(!c)return;const j=+c.dataset.t,i=S.t.indexOf(j);if(i>=0)S.t.splice(i,1);else S.t.push(j);c.classList.toggle("fav",i<0)});
+$("tx").addEventListener("input",e=>{S.tx=e.target.value});
+$("go").onclick=()=>{
+  const n=$("nm").value.trim();
+  if(!n){$("err").textContent="Bitte gib oben deinen Namen ein.";$("nm").focus();return}
+  $("err").textContent="";
+  const p={n:n,r:S.r,x:S.x,i:S.i,t:S.t,tx:S.tx};
+  $("code").value="MC1:"+enc(JSON.stringify(p));
+  $("done").style.display="block";
+  $("done").scrollIntoView({behavior:"smooth",block:"center"});
+};
+$("cp").onclick=async()=>{
+  const t=$("code").value;
+  try{await navigator.clipboard.writeText(t);$("cpm").textContent="Kopiert ✓"}
+  catch(_){$("code").select();$("cpm").textContent="Bitte manuell kopieren (markiert)."}
+};
+
+$("t1").onclick=()=>tab(1);$("t2").onclick=()=>tab(2);
+function tab(n){
+  $("v1").classList.toggle("hide",n!==1);$("v2").classList.toggle("hide",n!==2);
+  $("t1").classList.toggle("on",n===1);$("t2").classList.toggle("on",n===2);
+}
+
+$("ev").onclick=()=>{
+  const m=$("paste").value.match(/MC1:[A-Za-z0-9+\/=]+/g)||[];
+  const people={};let bad=0;
+  m.forEach(t=>{try{const p=JSON.parse(dec(t.slice(4)));if(!p||!p.n)throw 0;people[p.n.toLowerCase()]=p}catch(_){bad++}});
+  const list=Object.values(people),n=list.length;
+  if(!n){$("res").innerHTML='<p class="warn">Keine gültigen Codes gefunden.</p>';return}
+  let h=`<p><b>${n}</b> Teilnehmende${bad?` <span class="warn">(${bad} Code(s) unlesbar)</span>`:""}: ${list.map(p=>esc(p.n)).join(", ")}</p>`;
+  CATS.forEach(c=>{
+    const pts=c.o.map(()=>0),no=c.o.map(()=>0);
+    list.forEach(p=>{
+      ((p.r||{})[c.k]||[]).forEach((j,i)=>{if(pts[j]!==undefined)pts[j]+=3-i});
+      ((p.x||{})[c.k]||[]).forEach(j=>{if(no[j]!==undefined)no[j]++});
+    });
+    const ord=c.o.map((o,j)=>j).sort((a,b)=>pts[b]-pts[a]||no[a]-no[b]);
+    const max=Math.max(1,...pts);
+    h+=`<div class="box"><b>${c.t}</b>`+ord.map((j,i)=>{
+      const hot=n>=3&&no[j]*2>=n;
+      return `<div class="bar"><span class="lb">${i===0&&pts[j]>0?"★ ":""}${c.o[j][0]} ${esc(c.o[j][1])}</span><span class="tr"><span class="fi" style="display:block;width:${pts[j]/max*100}%"></span></span><span class="vl ${hot?"warn":""}">${pts[j]} P${no[j]?` · ✕${no[j]}`:""}</span></div>`;
+    }).join("");
+    const ideas=list.filter(p=>((p.i||{})[c.k]||"").trim());
+    if(ideas.length)h+=`<p class="note"><b>Eigene Ideen:</b></p>`+ideas.map(p=>`<p class="note">${esc(p.n)}: „${esc(p.i[c.k])}“</p>`).join("");
+    h+=`</div>`;
+  });
+  h+=`<div class="box"><b>🙋 Wer macht was?</b>`+TASKS.map((t,j)=>{const w=list.filter(p=>(p.t||[]).includes(j)).map(p=>esc(p.n));return `<p class="note"><b>${t[0]} ${esc(t[1])}:</b> ${w.length?w.join(", "):'<span class="warn">noch niemand</span>'}</p>`}).join("");
+  const tx=list.filter(p=>(p.tx||"").trim());
+  if(tx.length)h+=`<p class="note"><b>Sonstiges:</b></p>`+tx.map(p=>`<p class="note">${esc(p.n)}: „${esc(p.tx)}“</p>`).join("");
+  h+=`</div>`;
+  h+=`<p class="note">P = Punkte (3·2·1), ✕ = No-Gos. Rot markiert: mindestens die Hälfte lehnt es ab.</p>`;
+  $("res").innerHTML=h;
+};
+paint();
+</script></body></html>
